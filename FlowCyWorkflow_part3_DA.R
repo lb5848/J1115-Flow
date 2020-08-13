@@ -60,7 +60,8 @@ sce <- readRDS("SCE_part2_DR.rds")
 CATALYST::pbMDS(sce, by = "sample_id", color_by = "condition", features = type_markers(sce), fun = "median")
 plotAbundances(sce, k = "meta8", by = "cluster_id", group_by = "condition")
 
-plotExprHeatmap(sce, features = type_markers(sce), k = "meta8", by = "cluster_id", scale = "last", bars = TRUE, perc = TRUE)
+plotExprHeatmap(sce, features = type_markers(sce), k = "meta8", by = "cluster_id",
+                scale = "last", bars = TRUE, perc = TRUE)
 
 
 
@@ -85,13 +86,14 @@ ei <- sce@metadata$experiment_info
 # DA using edgeR
 design <- createDesignMatrix(ei,
                              cols_design = c("condition"))
+
 contrast <- createContrast(c(0, 1))
 
 nrow(contrast) == ncol(design)
 out_DA <- diffcyt(sce,
                   experiment_info = ei, design = design, contrast = contrast,
                   analysis_type = "DA", method_DA = "diffcyt-DA-edgeR",
-                  clustering_to_use = "meta10", verbose = TRUE, subsampling = TRUE,
+                  clustering_to_use = "meta8", verbose = TRUE, subsampling = TRUE,
                   transform = FALSE, normalize = FALSE)
 
 da <- rowData(out_DA$res)
