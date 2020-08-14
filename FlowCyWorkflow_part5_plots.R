@@ -92,7 +92,7 @@ dev.off()
 # Expression Heatmap - clusters
 tiff(filename = "ExpressionHeatmap.tiff", compression = "lzw", bg = "white")
 plotExprHeatmap(sce, features = type_markers(sce), k = "meta8", by = "cluster_id", 
-                scale = "never", perc = TRUE, bars = TRUE, hm_pal = rev(brewer.pal(11, "RdYlBu")))
+                scale = "last", bars = TRUE, perc = TRUE, hm_pal = rev(brewer.pal(11, "RdYlBu")))
 dev.off()
 svg(filename = "ExpressionHeatmap.svg", bg = "white")
 plotExprHeatmap(sce, features = type_markers(sce), k = "meta8", by = "cluster_id")
@@ -108,28 +108,31 @@ dev.off()
 
 # UMAP color_by = Clusters facet_by = condition
 tiff(filename = "UMAP_clusters_condition.tiff", compression = "lzw", bg = "white")
-plotDR(sce, dr = "UMAP", color_by = "Clusters", facet_by = "condition") + scale_color_brewer(palette = "Dark2") + 
+CATALYST::plotDR(sce, dr = "UMAP", color_by = "Clusters", facet_by = "condition") + scale_color_brewer(palette = "Dark2") + 
   geom_density2d(binwidth = 0.006, colour = "black")
 dev.off()
 svg(filename = "UMAP_clusters_condition.svg", bg = "white")
-plotDR(sce, dr = "UMAP", color_by = "Clusters", facet_by = "condition") + scale_color_brewer(palette = "Dark2")
+CATALYST::plotDR(sce, dr = "UMAP", color_by = "Clusters", facet_by = "condition") + scale_color_brewer(palette = "Dark2") +
+  geom_density2d(binwidth = 0.006, colour = "black")
 dev.off()
 
 # UMAP color_by = Clusters facet_by = sample_id
 tiff(filename = "UMAP_clusters_sample.tiff", compression = "lzw", bg = "white")
-plot <- plotDR(sce, dr = "UMAP", color_by = "Clusters", facet_by = "sample_id") + scale_color_brewer(palette = "Dark2")
+plot <- CATALYST::plotDR(sce, dr = "UMAP", color_by = "Clusters", facet_by = "sample_id") + scale_color_brewer(palette = "Dark2") +
+  geom_density2d(binwidth = 0.006, colour = "black")
 plot$facet$params$ncol <- 3
 plot
 dev.off()
 svg(filename = "UMAP_clusters_sample.svg", bg = "white")
-plot <- plotDR(sce, dr = "UMAP", color_by = "Clusters", facet_by = "sample_id") + scale_color_brewer(palette = "Dark2")
+plot <- CATALYST::plotDR(sce, dr = "UMAP", color_by = "Clusters", facet_by = "sample_id") + scale_color_brewer(palette = "Dark2") +
+  geom_density2d(binwidth = 0.006, colour = "black")
 plot$facet$params$ncol <- 3
 plot
 dev.off()
 
 # UMAP color_by = CD27 and DNAM1 facet_by = condition
 tiff(filename = "UMAP_CD27_DNAM1.tiff", compression = "lzw", bg = "white")
-plotDR(sce, dr = "UMAP", color_by = c("CD27", "DNAM1"), facet_by = "condition")
+CATALYST::plotDR(sce, dr = "UMAP", color_by = c("CD27", "DNAM1", "CD69"), facet_by = "condition")
 dev.off()
 svg(filename = "UMAP_CD27_DNAM1.svg", bg = "white")
 plotDR(sce, dr = "UMAP", color_by = c("CD27", "DNAM1"), facet_by = "condition")
