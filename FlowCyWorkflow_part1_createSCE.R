@@ -132,7 +132,7 @@ if(!dir.exists(QC_dir)){
 
 fs <- flowCore::fsApply(flowSet, function(ff){
   resQC_AI <- flow_auto_qc(fcsfiles = ff,
-                        folder_results = file.path(QC_dir, "flowAI"),
+                        folder_results = file.path(QC_dir, paste("flowAI", ff@description$GUID, sep = "/")),
                         output = 1)
   resQC <- PeacoQC(ff = ff,
                    determine_good_cells = "all",
