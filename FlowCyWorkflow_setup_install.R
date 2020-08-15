@@ -18,6 +18,7 @@ if(install_packages){
   BiocManager::install("flowAI")
   remotes::install_github("saeyslab/CytoNorm")
   BiocManager::install("PeacoQC")
+  BiocManager::install("ggpubr")
 }
 
 if(install_packages){

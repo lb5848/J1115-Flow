@@ -37,9 +37,9 @@ library(CytoML)
 options(java.parameters="-Xmx60G")
 library(tidyverse)
 library(data.table)
-library(scuttle)
-library(iMUBAC)
-
+# library(scuttle)
+# library(iMUBAC)
+library(ggpubr)
 
 
 # Set PrimaryDirectory where this script is located
@@ -66,6 +66,22 @@ getwd()
 plotFolder <- paste(outputDirectory, "plots", sep = "/")
 dir.create(plotFolder)
 setwd(plotFolder)
+
+# plotAbundances w/ stats
+
+# library(ggpubr)
+stat.test <- as_tibble(da)
+p.adj.signif <- c("**", "*", rep("ns", 6))
+# y.position <- c(90, 15, 90)
+group1 <- (rep("relapse",8))
+group2 <- (rep("responder", 8))
+y.position <- c(9, 9, 40, 75, 40, 40, 20, 1.1)
+stat.test <- cbind(stat.test, group1, group2, p.adj.signif, y.position)
+bxp <- plotAbundances(sce, k = "meta8", by = "cluster_id", group_by = "condition")
+bxp <- bxp + stat_pvalue_manual(stat.test, label = "p.adj.signif", tip.length = 0.01, size = 2.5)
+
+
+
 
 display.brewer.all(colorblindFriendly = TRUE)
 png(filename = "colorblindFriendly.png", bg = "white")
