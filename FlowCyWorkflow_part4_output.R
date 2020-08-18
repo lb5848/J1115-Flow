@@ -66,9 +66,17 @@ outputDirectory <- getwd()
 outputDirectory <- paste(outputDirectory, "output", sep = "/")
 dir.create(outputDirectory)
 setwd(outputDirectory)
-sce$Clusters <- cluster_ids(sce, "meta8")
+annotation_table <- as.data.frame(cbind(c(1:8), paste0("C", c(1:8))))
+colnames(annotation_table) <- c("meta8", "FinalClusters")
+annotation_table$FinalClusters <- factor(annotation_table$FinalClusters, 
+                                         levels = c("C8", "C3", "C1", "C2", "C7", "C5", "C4", "C6"))
+sce <- mergeClusters(sce, k = "meta8", 
+                     table = annotation_table, id = "cluster_annotation", overwrite = TRUE)
+plotExprHeatmap(sce, features = type_markers(sce), k = "cluster_annotation", by = "cluster_id",  fun = "mean",
+                scale = "last", bars = TRUE, perc = TRUE)
 # keep_dr = TRUE not all cells have DR
-flowSet <- sce2fcs(sce, split_by = "Clusters", keep_cd = TRUE, keep_dr = FALSE, assay = "counts")
+sce$cluster_annotation <- cluster_ids(sce, "cluster_annotation")
+flowSet <- sce2fcs(sce, split_by = "cluster_annotation", keep_cd = TRUE, keep_dr = FALSE, assay = "counts")
 write.flowSet(flowSet, outdir = outputDirectory, filename = "bycluster")
 merged <- sce2fcs(sce, split_by = NULL, keep_cd = TRUE, keep_dr = FALSE, assay = "counts")
 write.FCS(merged, filename = "merged.fcs")

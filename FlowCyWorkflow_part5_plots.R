@@ -40,7 +40,8 @@ library(data.table)
 # library(scuttle)
 # library(iMUBAC)
 library(ggpubr)
-
+library(scales)
+library(gplots)
 
 # Set PrimaryDirectory where this script is located
 dirname(rstudioapi::getActiveDocumentContext()$path)  
@@ -69,7 +70,6 @@ setwd(plotFolder)
 
 # plotAbundances w/ stats
 
-# library(ggpubr)
 stat.test <- as_tibble(da)
 p.adj.signif <- c("**", "*", rep("ns", 6))
 # y.position <- c(90, 15, 90)
@@ -79,9 +79,65 @@ y.position <- c(9, 9, 40, 75, 40, 40, 20, 1.1)
 stat.test <- cbind(stat.test, group1, group2, p.adj.signif, y.position)
 bxp <- plotAbundances(sce, k = "meta8", by = "cluster_id", group_by = "condition")
 bxp <- bxp + stat_pvalue_manual(stat.test, label = "p.adj.signif", tip.length = 0.01, size = 2.5)
+bxp
+
+df <- as.data.frame(colData(sce))
+summary(df)
+
+cond_cluster_df <- df %>% select(condition, cluster_annotation)
+freq_table <- table(cond_cluster_df$condition, cond_cluster_df$cluster_annotation)
+tot_rel <- sum(freq_table["relapse", ])
+tot_res <- sum(freq_table["responder", ])
+
+freq_table["relapse",] <- freq_table["relapse", ]/tot_rel*100
+freq_table["responder",] <- freq_table["responder", ]/tot_res*100
+freq_table <- t(freq_table)
+
+plotExprHeatmap(sce, features = type_markers(sce), k = "cluster_annotation", by = "cluster_id",  fun = "mean",
+                scale = "last", bars = TRUE, perc = TRUE)
+freqdf <- cbind(rownames(freq_table), freq_table[, 1], freq_table[, 2])
+colnames(freqdf) <- c("Cluster", "relapse", "responder")
+write.csv(freqdf, file = "freq_table.csv", row.names = FALSE)
+balloon <- read.table(file.choose(), header = TRUE, sep = ",", stringsAsFactors = FALSE)
 
 
+balloon$Cluster <- factor(balloon$Cluster, levels = rev(unique(balloon$Cluster)))
+balloon_melted <- melt(balloon, sort = FALSE)
 
+
+p <- ggplot(balloon_melted, aes(x = variable, y = Cluster))
+
+pp <- p + geom_point(aes(size = value), colour = "grey34") + theme(panel.background = element_blank()) +
+  scale_size_area(max_size = 12)
+
+pp
+
+matrix_r <- read.table(file.choose(), sep = ",", stringsAsFactors = FALSE, header = TRUE)
+matrix_r <- matrix_r[-c(9:11), ]
+colnames(matrix_r)
+matrix_r <- matrix_r[, c(2:15 )]
+colnames(matrix_r)
+matrix_r[, grep("Freq", colnames(matrix_r))]
+freqs <- matrix_r %>% select(grep("Freq", colnames(matrix_r)))
+MFI <- matrix_r %>% select(grep("Mean", colnames(matrix_r)))
+iMFI <- freqs*MFI
+colnames(iMFI) <- c("CD27", "CD57", "CD69", "DNAM1", "PD1", "TIGIT", "TIM3")
+scaled_iMFI <- iMFI
+for(i in c(1:ncol(iMFI))){
+  scaled_iMFI[, i] <- rescale(iMFI[, i], to = c(0, 100))
+}
+
+heat.colors<-colorRampPalette(c("navy","blue4","blue","skyblue","khaki1","lightgoldenrod1","goldenrod1","orange"))(100)
+##### Make a heatmap  ##change parameters if needed (type help(heatmap.2) to get a full description of the options)
+matrix_r <- scaled_iMFI
+scale.data <- as.matrix((t(matrix_r)-apply(t(matrix_r),1,mean))/apply(t(matrix_r),1,sd))
+colnames(scale.data) <- rownames(freq_table)
+##### Plot heatmap 
+heatmap.2(as.matrix(t(scale.data)),
+          dendrogram="both", scale="none",  na.color="grey",
+          col = heat.colors, trace = "none", labRow = rownames(t(scale.data)), key = TRUE, keysize = 1, cexCol=1,
+          density.info = "none", symkey = FALSE, margins = c(7, 10), main = "iMFI", 
+          xlab = "Markers", ylab = "CLUSTERS")
 
 display.brewer.all(colorblindFriendly = TRUE)
 png(filename = "colorblindFriendly.png", bg = "white")
