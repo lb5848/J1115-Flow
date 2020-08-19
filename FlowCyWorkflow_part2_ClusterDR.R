@@ -50,13 +50,12 @@ getwd()
 PrimaryDirectory <- getwd()
 PrimaryDirectory
 # Define workingDirectory
-wdName <- "Working_DirectoryFCS"
+wdName <- "200819_Working_DirectoryFCS"
 workingDirectory <- paste(PrimaryDirectory, wdName, sep = "/")
 
 setwd(workingDirectory)
 
 # Load workspace and SCEobject
-
 sce <- readRDS("SCE_part1.rds")
 CATALYST::pbMDS(sce, by = "sample_id", color_by = "condition", features = type_markers(sce), fun = "median")
 # Run FlowSOM and ConsensusClusterPlus
@@ -66,7 +65,7 @@ sce <- cluster(sce, features = "type", xdim = 10, ydim = 10, maxK = 20,
                verbose = TRUE, seed = seed)
 delta_area(sce)
 # Run dimensionality reduction
-n_cells <- 5000
+n_cells <- 3000
 n_events <- min(n_cells(sce))
 if(!(n_cells < n_events))
   n_cells <- n_events
@@ -81,41 +80,9 @@ sce <- runDR(sce, dr = "DiffusionMap", cells = n_cells, features = "type", assay
 
 saveRDS(sce, file = "SCE_part2_DR.rds")
 
-# Plots
-display.brewer.all(colorblindFriendly = TRUE)
-delta_area(sce)
-cdx <- type_markers(sce)
-plotMultiHeatmap(sce, k = "meta8",
-                 hm1 = cdx, hm2 = "abundances", 
-                 bars = TRUE, perc = TRUE, row_anno = FALSE)
-plotMultiHeatmap(sce, k = "meta10",
-                 hm1 = cdx, hm2 = "abundances", 
-                 bars = TRUE, perc = TRUE, row_anno = FALSE)
+# make some plots and check everything is fine
 
-plotExprHeatmap(sce, features = type_markers(sce), k = "meta8", by = "cluster_id",  fun = "mean", scale = "last")
-
-plotDR(sce, dr = "UMAP", color_by = "condition") + scale_color_manual(values = c("blue", "red"))
-CATALYST::plotDR(sce, dr = "UMAP", color_by = "condition")
-# UMAP plot color_by = "meta8", facet_by = "condition"
-CATALYST::plotDR(sce, dr = "UMAP", color_by = "meta10", facet_by = "condition")
-
-CATALYST::plotDR(sce, dr = "UMAP", color_by = "condition", facet_by = "condition")
 CATALYST::plotDR(sce, dr = "UMAP", color_by = "meta8", facet_by = "condition")
-CATALYST::plotDR(sce, dr = "TSNE", color_by = "condition", facet_by = "condition")
-CATALYST::plotDR(sce, dr = "DiffusionMap", color_by = "condition") + scale_color_manual(values = c("blue", "red"))
-markers <- c("TCF1", "CD69", "PD1", "CD57", "CD127", "TIGIT")
-CATALYST::plotDR(sce, dr = "DiffusionMap", color_by = markers)
-CATALYST::plotDR(sce, dr = "UMAP", color_by = markers)
-CATALYST::plotDR(sce, dr = "TSNE", color_by = markers)
-# UMAP plot color_by = "meta8", facet_by = "sample_id"
-plot <- CATALYST::plotDR(sce, dr = "UMAP", color_by = "meta8", facet_by = "sample_id")
-plot$facet$params$ncol <- 3
-plot
+CATALYST::plotDR(sce, dr = "TSNE", color_by = "meta8", facet_by = "condition")
+CATALYST::plotDR(sce, dr = "DiffusionMap", color_by = "meta8", facet_by = "condition")
 
-plot <- CATALYST::plotDR(sce, dr = "DiffusionMap", color_by = "meta8", facet_by = "sample_id")
-plot$facet$params$ncol <- 3
-plot
-# UMAP color_by CD27 DNAM1
-CATALYST::plotDR(sce, dr = "UMAP", color_by = c("CD127", "CD69"), facet_by = "condition")
-
-CATALYST::plotDR(sce, dr = "UMAP", color_by = "meta8", facet_by = "sample_id")

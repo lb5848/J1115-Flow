@@ -72,7 +72,7 @@ csv2fcsDirectory <- paste(dirDirectory, csv2fcsName, sep = "/")
 dir.create(csv2fcsDirectory)
 
 # Define workingDirectory
-wdName <- "Working_DirectoryFCS"
+wdName <- "200819_Working_DirectoryFCS"
 workingDirectory <- paste(PrimaryDirectory, wdName, sep = "/")
 dir.create(workingDirectory)
 
