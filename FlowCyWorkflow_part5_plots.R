@@ -71,13 +71,14 @@ setwd(plotFolder)
 # plotAbundances w/ stats
 
 stat.test <- as_tibble(da)
+stat.test$cluster_id <- paste0("C", stat.test$cluster_id)
 p.adj.signif <- c("**", "*", rep("ns", 6))
 # y.position <- c(90, 15, 90)
 group1 <- (rep("relapse",8))
 group2 <- (rep("responder", 8))
 y.position <- c(9, 9, 40, 75, 40, 40, 20, 1.1)
 stat.test <- cbind(stat.test, group1, group2, p.adj.signif, y.position)
-bxp <- plotAbundances(sce, k = "meta8", by = "cluster_id", group_by = "condition")
+bxp <- plotAbundances(sce, k = "cluster_annotation", by = "cluster_id", group_by = "condition")
 bxp <- bxp + stat_pvalue_manual(stat.test, label = "p.adj.signif", tip.length = 0.01, size = 2.5)
 bxp
 
@@ -94,7 +95,7 @@ freq_table["responder",] <- freq_table["responder", ]/tot_res*100
 freq_table <- t(freq_table)
 
 plotExprHeatmap(sce, features = type_markers(sce), k = "cluster_annotation", by = "cluster_id",  fun = "mean",
-                scale = "last", bars = TRUE, perc = TRUE)
+                scale = "first", bars = TRUE, perc = TRUE)
 freqdf <- cbind(rownames(freq_table), freq_table[, 1], freq_table[, 2])
 colnames(freqdf) <- c("Cluster", "relapse", "responder")
 write.csv(freqdf, file = "freq_table.csv", row.names = FALSE)
@@ -179,35 +180,22 @@ plotClusterExprs(sce, k = "meta8", features = "type")
 dev.off()
 
 # UMAP color_by = Clusters facet_by = condition
-tiff(filename = "UMAP_clusters_condition.tiff", compression = "lzw", bg = "white")
-CATALYST::plotDR(sce, dr = "UMAP", color_by = "Clusters", facet_by = "condition") + scale_color_brewer(palette = "Dark2") + 
-  geom_density2d(binwidth = 0.006, colour = "black")
-dev.off()
 svg(filename = "UMAP_clusters_condition.svg", bg = "white")
-CATALYST::plotDR(sce, dr = "UMAP", color_by = "Clusters", facet_by = "condition") + scale_color_brewer(palette = "Dark2") +
+CATALYST::plotDR(sce, dr = "UMAP", color_by = "cluster_annotation", facet_by = "condition") + scale_color_brewer(palette = "Dark2") +
   geom_density2d(binwidth = 0.006, colour = "black")
 dev.off()
 
 # UMAP color_by = Clusters facet_by = sample_id
-tiff(filename = "UMAP_clusters_sample.tiff", compression = "lzw", bg = "white")
-plot <- CATALYST::plotDR(sce, dr = "UMAP", color_by = "Clusters", facet_by = "sample_id") + scale_color_brewer(palette = "Dark2") +
-  geom_density2d(binwidth = 0.006, colour = "black")
-plot$facet$params$ncol <- 3
-plot
-dev.off()
 svg(filename = "UMAP_clusters_sample.svg", bg = "white")
-plot <- CATALYST::plotDR(sce, dr = "UMAP", color_by = "Clusters", facet_by = "sample_id") + scale_color_brewer(palette = "Dark2") +
+plot <- CATALYST::plotDR(sce, dr = "UMAP", color_by = "cluster_annotation", facet_by = "sample_id") + scale_color_brewer(palette = "Dark2") +
   geom_density2d(binwidth = 0.006, colour = "black")
 plot$facet$params$ncol <- 3
 plot
 dev.off()
 
 # UMAP color_by = CD27 and DNAM1 facet_by = condition
-tiff(filename = "UMAP_CD27_DNAM1.tiff", compression = "lzw", bg = "white")
-CATALYST::plotDR(sce, dr = "UMAP", color_by = c("CD27", "DNAM1", "CD69"), facet_by = "condition")
-dev.off()
 svg(filename = "UMAP_CD27_DNAM1.svg", bg = "white")
-plotDR(sce, dr = "UMAP", color_by = c("CD27", "DNAM1"), facet_by = "condition")
+CATALYST::plotDR(sce, dr = "UMAP", color_by = c("CD27", "DNAM1"), facet_by = "condition")
 dev.off()
 
 # UMAP color_by = Clusters
