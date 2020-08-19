@@ -73,7 +73,6 @@ setwd(plotFolder)
 stat.test <- as_tibble(da)
 stat.test$cluster_id <- paste0("C", stat.test$cluster_id)
 p.adj.signif <- c("**", "*", rep("ns", 6))
-# y.position <- c(90, 15, 90)
 group1 <- (rep("relapse",8))
 group2 <- (rep("responder", 8))
 y.position <- c(9, 9, 40, 75, 40, 40, 20, 1.1)
@@ -99,7 +98,8 @@ plotExprHeatmap(sce, features = type_markers(sce), k = "cluster_annotation", by 
 freqdf <- cbind(rownames(freq_table), freq_table[, 1], freq_table[, 2])
 colnames(freqdf) <- c("Cluster", "relapse", "responder")
 write.csv(freqdf, file = "freq_table.csv", row.names = FALSE)
-balloon <- read.table(file.choose(), header = TRUE, sep = ",", stringsAsFactors = FALSE)
+file <- "freq_table.csv"
+balloon <- read.table(file, header = TRUE, sep = ",", stringsAsFactors = FALSE)
 
 
 balloon$Cluster <- factor(balloon$Cluster, levels = rev(unique(balloon$Cluster)))
@@ -128,7 +128,7 @@ for(i in c(1:ncol(iMFI))){
   scaled_iMFI[, i] <- rescale(iMFI[, i], to = c(0, 100))
 }
 
-heat.colors<-colorRampPalette(c("navy","blue4","blue","skyblue","khaki1","lightgoldenrod1","goldenrod1","orange"))(100)
+heat.colors <- colorRampPalette(c("navy","blue4","blue","skyblue","khaki1","lightgoldenrod1","goldenrod1","orange"))(100)
 ##### Make a heatmap  ##change parameters if needed (type help(heatmap.2) to get a full description of the options)
 matrix_r <- scaled_iMFI
 scale.data <- as.matrix((t(matrix_r)-apply(t(matrix_r),1,mean))/apply(t(matrix_r),1,sd))
@@ -141,70 +141,59 @@ heatmap.2(as.matrix(t(scale.data)),
           xlab = "Markers", ylab = "CLUSTERS")
 
 display.brewer.all(colorblindFriendly = TRUE)
-png(filename = "colorblindFriendly.png", bg = "white")
-display.brewer.all(colorblindFriendly = TRUE)
-dev.off()
-png(filename = "brewerAll.png", bg = "white")
-display.brewer.all(colorblindFriendly = FALSE)
-dev.off()
+
 # MDS plot
-tiff(filename = "MDSplot.tiff", compression = "lzw", bg = "white")
+
 CATALYST::pbMDS(sce, by = "sample_id", color_by = "condition")
-dev.off()
-svg(filename = "MDSplot.svg", bg = "white")
-CATALYST::pbMDS(sce, by = "sample_id", color_by = "condition")
-dev.off()
-# boxplot abundances per cluster
-tiff(filename = "boxplot_clusters.tiff", compression = "lzw", bg = "white")
-plotAbundances(sce, k = "meta8", by = "cluster_id", group_by = "condition")
-dev.off()
-svg(filename = "boxplot_clusters.svg", bg = "white")
-plotAbundances(sce, k = "meta8", by = "cluster_id", group_by = "condition")
-dev.off()
+
+# boxplot abundances per cluster w/ stats
+
+stat.test <- as_tibble(da)
+stat.test$cluster_id <- paste0("C", stat.test$cluster_id)
+p.adj.signif <- c("**", "*", rep("ns", 6))
+group1 <- (rep("relapse",8))
+group2 <- (rep("responder", 8))
+y.position <- c(9, 9, 40, 75, 40, 40, 20, 1.1)
+stat.test <- cbind(stat.test, group1, group2, p.adj.signif, y.position)
+bxp <- plotAbundances(sce, k = "cluster_annotation", by = "cluster_id", group_by = "condition")
+bxp <- bxp + stat_pvalue_manual(stat.test, label = "p.adj.signif", tip.length = 0.01, size = 2.5)
+bxp
+
+
 
 # Expression Heatmap - clusters
-tiff(filename = "ExpressionHeatmap.tiff", compression = "lzw", bg = "white")
-plotExprHeatmap(sce, features = type_markers(sce), k = "meta8", by = "cluster_id", 
-                scale = "last", bars = TRUE, perc = TRUE, hm_pal = rev(brewer.pal(11, "RdYlBu")))
-dev.off()
-svg(filename = "ExpressionHeatmap.svg", bg = "white")
-plotExprHeatmap(sce, features = type_markers(sce), k = "meta8", by = "cluster_id")
-dev.off()
+plotExprHeatmap(sce, features = type_markers(sce), k = "cluster_annotation", by = "cluster_id",  fun = "mean",
+                scale = "first", bars = TRUE, perc = TRUE)
 
 # Expression - single cluster per marker
-tiff(filename = "Cluster_exprs.tiff", compression = "lzw", bg = "white")
-plotClusterExprs(sce, k = "meta8", features = "type")
-dev.off()
-svg(filename = "Cluster_exprs.svg", bg = "white")
-plotClusterExprs(sce, k = "meta8", features = "type")
-dev.off()
+
+plotClusterExprs(sce, k = "cluster_annotation", features = "type")
+
 
 # UMAP color_by = Clusters facet_by = condition
-svg(filename = "UMAP_clusters_condition.svg", bg = "white")
 CATALYST::plotDR(sce, dr = "UMAP", color_by = "cluster_annotation", facet_by = "condition") + scale_color_brewer(palette = "Dark2") +
   geom_density2d(binwidth = 0.006, colour = "black")
-dev.off()
 
 # UMAP color_by = Clusters facet_by = sample_id
-svg(filename = "UMAP_clusters_sample.svg", bg = "white")
 plot <- CATALYST::plotDR(sce, dr = "UMAP", color_by = "cluster_annotation", facet_by = "sample_id") + scale_color_brewer(palette = "Dark2") +
   geom_density2d(binwidth = 0.006, colour = "black")
 plot$facet$params$ncol <- 3
 plot
-dev.off()
 
 # UMAP color_by = CD27 and DNAM1 facet_by = condition
-svg(filename = "UMAP_CD27_DNAM1.svg", bg = "white")
-CATALYST::plotDR(sce, dr = "UMAP", color_by = c("CD27", "DNAM1"), facet_by = "condition")
-dev.off()
 
-# UMAP color_by = Clusters
-tiff(filename = "UMAP_clusters_allPts.tiff", compression = "lzw", bg = "white")
-plotDR(sce, dr = "UMAP", color_by = "Clusters") + scale_color_brewer(palette = "Dark2")
-dev.off()
-svg(filename = "UMAP_clusters_allPts.svg", bg = "white")
-plotDR(sce, dr = "UMAP", color_by = "Clusters") + scale_color_brewer(palette = "Dark2")
-dev.off()
+CATALYST::plotDR(sce, dr = "UMAP", color_by = c("CD27", "DNAM1"), facet_by = "condition") +
+  geom_density2d(binwidth = 0.006, colour = "black")
+
+# DiffMap color_by = Clusters
+CATALYST::plotDR(sce, dr = "DiffusionMap", color_by = "cluster_annotation", facet_by = "condition") + 
+  scale_color_brewer(palette = "Dark2")
+
+CATALYST::plotDR(sce, dr = "UMAP", color_by = "cluster_annotation", facet_by = "condition") + 
+  scale_color_brewer(palette = "Dark2") + geom_density2d(binwidth = 0.006, colour = "black")
+
+CATALYST::plotDR(sce, dr = "TSNE", color_by = "cluster_annotation", facet_by = "condition") + 
+  scale_color_brewer(palette = "Dark2")
 
 # plotCounts
 tiff(filename = "plotCounts.tiff", bg = "white", compression = "lzw")
