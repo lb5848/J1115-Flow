@@ -69,7 +69,15 @@ plotAbundances(sce, k = "meta8", by = "cluster_id", group_by = "condition")
 plotExprHeatmap(sce, features = type_markers(sce), k = "meta8", by = "cluster_id",
                 scale = "first", bars = TRUE, perc = TRUE, fun = "mean")
 
-
+annotation_table <- as.data.frame(cbind(c(1:8), paste0("C", c(1:8))))
+colnames(annotation_table) <- c("meta8", "FinalClusters")
+annotation_table$FinalClusters <- factor(annotation_table$FinalClusters)
+sce <- mergeClusters(sce, k = "meta8", 
+                     table = annotation_table, id = "cluster_annotation", overwrite = TRUE)
+filtered_sce <- filterSCE(sce, cluster_id %in% c(paste0("C", c(1:7))), k = "cluster_annotation")
+# store original_sce
+old_sce <- sce
+sce <- filtered_sce
 # Stat analysis
 FDR_cutoff <- 0.05
 ei <- sce@metadata$experiment_info
@@ -86,7 +94,7 @@ nrow(contrast) == ncol(design)
 out_DA <- diffcyt(sce,
                   experiment_info = ei, design = design, contrast = contrast,
                   analysis_type = "DA", method_DA = "diffcyt-DA-edgeR",
-                  clustering_to_use = "meta8", verbose = TRUE, subsampling = TRUE,
+                  clustering_to_use = "cluster_annotation", verbose = TRUE, subsampling = TRUE,
                   transform = FALSE, normalize = TRUE, min_cells = 100, min_samples = 3)
 
 da <- rowData(out_DA$res)
