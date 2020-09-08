@@ -151,10 +151,11 @@ ggsave("MDSplot.svg", plot = last_plot(), dpi = 300)
 
 
 # Expression Heatmap - clusters
+# SAVE!!!
 heatmap.col <- colorRampPalette(rev(c("navy","blue4","blue","white")))(100)
+
 plotExprHeatmap(sce, features = type_markers(sce), k = "cluster_annotation", by = "cluster_id",  fun = "mean",
                 scale = "first", bars = TRUE, perc = TRUE, hm_pal = rev(brewer.pal(11, "RdYlBu")))
-ggsave("ExprHeatmap_cluster_annotation.svg", plot = last_plot(), dpi = 300)
 
 # Expression - single cluster per marker
 
