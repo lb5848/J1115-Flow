@@ -83,7 +83,7 @@ stat.test <- cbind(stat.test, group1, group2, p.adj.signif, y.position)
 bxp <- plotAbundances(sce, k = "cluster_annotation", by = "cluster_id", group_by = "condition")
 bxp <- bxp + stat_pvalue_manual(stat.test, label = "p.adj.signif", tip.length = 0.01, size = 2.5)
 bxp
-
+ggsave("abundances_stat.pdf", plot = last_plot(), dpi = 300)
 ggsave("abundances_stat.svg", plot = last_plot(), dpi = 300)
 
 # # make balloon plots based on cluster freq
